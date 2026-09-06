@@ -1,36 +1,30 @@
-Captain of Industry Open License (COI-Open)
-Version 1.0
+MIT License
 
 Copyright (c) 2026 iScripters
 
-This License applies to all files distributed with this notice, including code,
-artwork, graphics, icons, images, models, textures, audio, documentation,
-configuration files, and other materials (the "Work"). The Work may be used
-only in connection with Captain of Industry® (the "Game"), the video game
-published by MaFi Games (https://coigame.com), including its official updates,
-expansions, and downloadable content, as permitted by this License and the
-Captain of Industry Modding Policy.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy of
-the Work to use, copy, modify, merge, publish, distribute, and create
-derivative works of the Work and modified versions of the Work, subject to the
-following conditions:
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-1. The Work, modified versions of the Work, and any material derived from the
-Work may not be used or distributed in any other game, software product,
-standalone asset pack, or unrelated project.
-2. Any modified version of the Work or material derived from the Work must
-remain under this License.
-3. Use of the Work must comply with the Captain of Industry Modding Policy.
-This License does not grant any rights in Captain of Industry, MaFi Games'
-trademarks, game code, game assets, or other intellectual property.
-4. The above copyright notice, this permission notice, and credit to the
-original author must be included in all copies or substantial portions of the
-Work, including any community maintenance release.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
-LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE WORK OR THE USE OR
-OTHER DEALINGS IN THE WORK.
+LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+MaFi Games Materials Exclusion
+
+This MIT License applies only to the original source code and original content
+created for Priority Manager. It does not grant any rights in Captain of
+Industry, MaFi Games' trademarks, game code, game assets, or any other MaFi
+Games materials. Any such materials, including short excerpts or references to
+Captain of Industry Game Code, remain the property of MaFi Games and may be
+used only as permitted by the Captain of Industry Modding Policy:
+https://www.captain-of-industry.com/Legal/Modding-Policy

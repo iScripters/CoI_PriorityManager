@@ -65,7 +65,7 @@ The archive is written to `dist\PriorityManager_0.7.1.zip`.
 
 ## License And Attribution
 
-This project is licensed under [COI-Open](LICENSE), the Captain of Industry Open License. It may be used, modified, and shared only for Captain of Industry and in compliance with the [Captain of Industry Modding Policy](https://www.captain-of-industry.com/Legal/Modding-Policy).
+This project's original mod content is licensed under the [MIT License](LICENSE). The license explicitly excludes Captain of Industry and MaFi Games materials, which remain subject to the [Captain of Industry Modding Policy](https://www.captain-of-industry.com/Legal/Modding-Policy).
 
 This Mod includes short excerpts or references to Captain of Industry Game Code. Any such Game Code is (c) MaFi Games and is used only under the Captain of Industry Modding Policy.
 
