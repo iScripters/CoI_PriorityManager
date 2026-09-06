@@ -1,0 +1,15 @@
+{
+  "id": "PriorityManager",
+  "version": "0.7.1",
+  "display_name": "Priority Manager",
+  "description_short": "Manage building priorities and shared priority groups.",
+  "description_long": "View and change building priorities from one window. Create named groups with separate general, import, export, and generator priority settings.",
+  "authors": ["iScripters"],
+  "primary_dlls": ["PriorityManager.dll"],
+  "primary_mod_class_name": "PriorityManager.PriorityManagerMod",
+  "min_game_version": "0.8.7",
+  "max_verified_game_version": "0.8.7",
+  "non_locking_dll_load": true,
+  "can_add_to_saved_game": true,
+  "can_remove_from_saved_game": true
+}

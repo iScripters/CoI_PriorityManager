@@ -1,0 +1,7 @@
+{
+  "groups_state": {
+    "default": "{\"version\":1,\"groups\":[]}",
+    "max_length": 250000,
+    "description": "Internal saved priority group data."
+  }
+}

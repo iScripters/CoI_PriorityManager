@@ -1,0 +1,35 @@
+# Build and release outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ist/
+
+# IDE and user-specific files
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.rsuser
+*.DotSettings.user
+
+# Local Captain of Industry UI API research site
+UiToolkitDocs/
+
+# Local AI assistant configuration and instructions
+.opencode/
+opencode.json
+opencode.jsonc
+.claude/
+.aider/
+.continue/
+.cursor/
+AGENTS.md
+AGENTS.local.md
+CLAUDE.md
+CLAUDE.local.md
+GEMINI.md
+COPILOT.md
+OPENCODE.md
+AI.md
+AI_INSTRUCTIONS.md
+PROJECT_CONTEXT.md
