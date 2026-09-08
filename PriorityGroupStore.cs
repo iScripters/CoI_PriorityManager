@@ -101,6 +101,12 @@ public sealed class PriorityGroupStore {
     Save();
   }
 
+  public void RemoveMany(IEnumerable<int> entityIds, PriorityGroup group) {
+    HashSet<int> ids = new HashSet<int>(entityIds);
+    if (ids.Count == 0 || group.MemberIds.RemoveAll(id => ids.Contains(id)) == 0) return;
+    Save();
+  }
+
   public bool PruneMissing(Func<int, bool> entityExists) {
     bool changed = false;
     foreach (PriorityGroup group in state.Groups) {

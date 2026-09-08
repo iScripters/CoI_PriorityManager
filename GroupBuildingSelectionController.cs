@@ -26,6 +26,7 @@ public sealed class GroupBuildingSelectionController : BaseEntityCursorInputCont
   private readonly PriorityGroupStore groups;
   private readonly BuildingPriorityService priorities;
   private PriorityGroup? activeGroup;
+  private bool isRemoving;
 
   public GroupBuildingSelectionController(
     ToolbarHud toolbar,
@@ -58,14 +59,21 @@ public sealed class GroupBuildingSelectionController : BaseEntityCursorInputCont
   }
 
   public event Action<PriorityGroup, int>? BuildingsAdded;
+  public event Action<PriorityGroup, int>? BuildingsRemoved;
 
-  public void Start(PriorityGroup group) {
+  public void Start(PriorityGroup group, bool remove) {
     activeGroup = group;
+    isRemoving = remove;
+    InitHighlightColors(
+      remove ? ColorRgba.Red : ColorRgba.CornflowerBlue,
+      ColorRgba.Red,
+      remove ? ColorRgba.Red : ColorRgba.CornflowerBlue);
     Context.InputMgr.ActivateNewController(this);
   }
 
   protected override bool Matches(IStaticEntity entity, bool isAreaSelection, bool isLeftClick) {
-    return !entity.IsDestroyed && priorities.HasAnyControl(entity);
+    if (entity.IsDestroyed || !priorities.HasAnyControl(entity)) return false;
+    return !isRemoving || activeGroup?.MemberIds.Contains(entity.Id.Value) == true;
   }
 
   protected override bool OnFirstActivated(
@@ -88,15 +96,22 @@ public sealed class GroupBuildingSelectionController : BaseEntityCursorInputCont
 
     List<int> entityIds = new List<int>(selectedEntities.Count);
     foreach (IStaticEntity building in selectedEntities) entityIds.Add(building.Id.Value);
-    groups.AssignMany(entityIds, group);
-    foreach (IStaticEntity building in selectedEntities) priorities.ApplyGroupToBuilding(group, building);
+    if (isRemoving) {
+      groups.RemoveMany(entityIds, group);
+      foreach (IStaticEntity building in selectedEntities) priorities.ResetAll(building);
+    } else {
+      groups.AssignMany(entityIds, group);
+      foreach (IStaticEntity building in selectedEntities) priorities.ApplyGroupToBuilding(group, building);
+    }
 
     Context.InputMgr.DeactivateController(this);
-    BuildingsAdded?.Invoke(group, entityIds.Count);
+    if (isRemoving) BuildingsRemoved?.Invoke(group, entityIds.Count);
+    else BuildingsAdded?.Invoke(group, entityIds.Count);
   }
 
   public override void Deactivate() {
     base.Deactivate();
     activeGroup = null;
+    isRemoving = false;
   }
 }

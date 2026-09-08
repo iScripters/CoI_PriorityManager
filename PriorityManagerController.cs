@@ -31,6 +31,7 @@ public sealed class PriorityManagerController : IToolbarItemController {
       null);
     window.OnCloseStart += OnWindowClose;
     buildingSelection.BuildingsAdded += OnBuildingsAdded;
+    buildingSelection.BuildingsRemoved += OnBuildingsAdded;
     VisibilityChanged?.Invoke(this);
   }
 

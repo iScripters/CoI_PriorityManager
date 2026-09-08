@@ -7,8 +7,8 @@ Priority Manager is an unofficial, non-commercial mod for Captain of Industry 0.
 ## Features
 
 - **Overall** lists every supported building, including storage and Cargo Depot priority controls. Filter by name, type, or group; sort by name, priority, group, or type; then select a building icon to pan the camera to it.
-- **Groups** creates named groups with shared general, import, export, and generator priority settings. Settings apply only to members that support the relevant control.
-- **Add buildings** uses the game-native single-click and area-selection controls to assign group members. Press Escape to cancel.
+- **Groups** creates named groups with shared general, import, export, and generator priority settings. Settings apply only to members that support the relevant control. Hover a group card to highlight its members on the map.
+- **Add buildings** uses the game-native single-click and area-selection controls to assign group members. **Remove buildings** uses the same controls with red highlights and only selects that group's members. Press Escape to cancel either mode.
 - **Building inspectors** include a collapsible **Priority group** section for direct group assignment and priority reset.
 - **Reset actions** restore native defaults. Removing a building from a group or deleting a group resets its supported priority controls.
 - **Reset all priorities** can preserve groups and/or limit the reset to buildings outside groups.

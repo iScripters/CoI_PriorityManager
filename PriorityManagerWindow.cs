@@ -6,6 +6,7 @@ using Mafi.Core.Entities.Static;
 using Mafi.Core.Prototypes;
 using Mafi.Localization;
 using Mafi.Unity.Camera;
+using Mafi.Unity.Entities;
 using Mafi.Unity.Ui;
 using Mafi.Unity.Ui.Library.Inspectors;
 using Mafi.Unity.UiToolkit;
@@ -29,6 +30,7 @@ public sealed class PriorityManagerWindow : Window {
   private readonly GroupBuildingSelectionController buildingSelection;
   private readonly CameraController camera;
   private readonly InspectorsManager inspectors;
+  private readonly EntitiesRenderingManager entitiesRendering;
   private readonly Column overallRows = new Column().AlignItemsStretch();
   private readonly Column groupRows = new Column().AlignItemsStretch();
   private readonly Label overallStatus = new Label();
@@ -40,6 +42,7 @@ public sealed class PriorityManagerWindow : Window {
   private readonly TabContainer tabs;
   private readonly HashSet<string> expandedGroupIds = new HashSet<string>();
   private readonly Dictionary<int, int> prioritySortValues = new Dictionary<int, int>();
+  private readonly List<ulong> groupHighlightIds = new List<ulong>();
   private List<IStaticEntity>? overallBuildings;
   private int overallPage;
   private int prioritySortCheckFrames;
@@ -51,14 +54,18 @@ public sealed class PriorityManagerWindow : Window {
     BuildingPriorityService priorities,
     GroupBuildingSelectionController buildingSelection,
     CameraController camera,
-    InspectorsManager inspectors)
+    InspectorsManager inspectors,
+    EntitiesRenderingManager entitiesRendering)
     : base(new LocStrFormatted("Priority Manager")) {
     this.groups = groups;
     this.priorities = priorities;
     this.buildingSelection = buildingSelection;
     this.camera = camera;
     this.inspectors = inspectors;
+    this.entitiesRendering = entitiesRendering;
     buildingSelection.BuildingsAdded += OnBuildingsAdded;
+    buildingSelection.BuildingsRemoved += OnBuildingsRemoved;
+    OnCloseStart += _ => ClearGroupHighlights();
 
     WindowSize(new Px(1000), new Px(720));
     MakeMovableAndEnablePositionSaving();
@@ -282,6 +289,7 @@ public sealed class PriorityManagerWindow : Window {
   }
 
   private void RebuildGroupRows() {
+    ClearGroupHighlights();
     RemoveChildren(groupRows);
     if (groups.Groups.Count == 0) {
       groupRows.Add(new Label(new LocStrFormatted("Create a group, then assign buildings from the Overall tab.")));
@@ -292,6 +300,7 @@ public sealed class PriorityManagerWindow : Window {
 
   private UiComponent BuildGroupCard(PriorityGroup group) {
     Panel card = new Panel(noBolts: false).ReducedPadding().BodyGap(2.pt()).MarginBottom(2.pt()).AlignSelfStretch();
+    card.OnMouseEnterLeave(() => HighlightGroupMembers(group), ClearGroupHighlights);
     Row titleRow = new Row(2.pt()).AlignItemsCenter();
     TextField name = new TextField().Text(group.Name).CharLimit(64).OnEditEnd(value => RenameGroup(group, value)).FlexGrow(1f).MinWidth(300.px());
     titleRow.Add(name);
@@ -301,6 +310,7 @@ public sealed class PriorityManagerWindow : Window {
       titleRow.Add(new ButtonText(Button.General, new LocStrFormatted(membersButtonText), () => ToggleGroupMembers(group)));
     }
     titleRow.Add(new ButtonText(Button.Primary, new LocStrFormatted("Add buildings"), () => StartBuildingSelection(group)));
+    titleRow.Add(new ButtonText(Button.Danger, new LocStrFormatted("Remove buildings"), () => StartBuildingRemoval(group)));
     titleRow.Add(new ButtonText(Button.Danger, new LocStrFormatted("Delete"), () => DeleteGroup(group)));
     card.Body.Add(titleRow);
 
@@ -400,13 +410,37 @@ public sealed class PriorityManagerWindow : Window {
   }
 
   private void StartBuildingSelection(PriorityGroup group) {
-    buildingSelection.Start(group);
+    buildingSelection.Start(group, remove: false);
     SetStatus($"Drag over buildings to add them to '{group.Name}'. Press Escape to cancel.");
+  }
+
+  private void StartBuildingRemoval(PriorityGroup group) {
+    buildingSelection.Start(group, remove: true);
+    SetStatus($"Drag over buildings to remove them from '{group.Name}'. Red highlights show eligible members. Press Escape to cancel.");
   }
 
   private void OnBuildingsAdded(PriorityGroup group, int count) {
     SetStatus($"Added {count} buildings to '{group.Name}' and applied its priorities.");
     RebuildGroupRows();
+  }
+
+  private void OnBuildingsRemoved(PriorityGroup group, int count) {
+    SetStatus($"Removed {count} buildings from '{group.Name}' and reset their priorities.");
+    RebuildGroupRows();
+  }
+
+  private void HighlightGroupMembers(PriorityGroup group) {
+    ClearGroupHighlights();
+    foreach (int memberId in group.MemberIds) {
+      if (priorities.TryGetBuilding(memberId, out IStaticEntity building) && building is IRenderedEntity rendered) {
+        groupHighlightIds.Add(entitiesRendering.AddHighlight(rendered, ColorRgba.CornflowerBlue));
+      }
+    }
+  }
+
+  private void ClearGroupHighlights() {
+    foreach (ulong highlightId in groupHighlightIds) entitiesRendering.RemoveHighlight(highlightId);
+    groupHighlightIds.Clear();
   }
 
   private void ChangeIndividualPriority(int entityId, PriorityControl control, int priority) {
