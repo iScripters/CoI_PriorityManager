@@ -50,6 +50,12 @@ public sealed class BuildingPriorityService {
       || Supports(building, PriorityControl.Generator);
   }
 
+  public bool HasAnyPotentialControl(IStaticEntity building) {
+    return building is IEntityWithGeneralPriority
+      || building is IEntityWithCustomPriority
+      || building is IElectricityGeneratingEntity;
+  }
+
   public bool Supports(IStaticEntity building, PriorityControl control) {
     switch (control) {
       case PriorityControl.General:

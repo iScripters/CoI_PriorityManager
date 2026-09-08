@@ -53,7 +53,6 @@ public sealed class InspectorGroupAssignmentController {
   private readonly IUnityInputMgr input;
   private readonly UiContext context;
   private readonly Dictionary<IEntityInspector, InspectorBinding> bindings = new Dictionary<IEntityInspector, InspectorBinding>();
-  private readonly HashSet<int> collapsedEntityIds = new HashSet<int>();
   private CreateGroupPopup? createGroupPopup;
 
   public InspectorGroupAssignmentController(
@@ -72,10 +71,15 @@ public sealed class InspectorGroupAssignmentController {
   }
 
   private void OnControllerActivated(IUnityInputController controller) {
-    if (!(controller is IEntityInspector inspector)
-      || !(inspector.EntityUntyped is IStaticEntity building)
+    if (!(controller is IEntityInspector inspector)) return;
+    TryAttach(inspector);
+    if (inspector is Window window) window.Schedule.Execute(() => TryAttach(inspector));
+  }
+
+  private void TryAttach(IEntityInspector inspector) {
+    if (!(inspector.EntityUntyped is IStaticEntity building)
       || building.IsDestroyed
-      || !priorities.HasAnyControl(building)
+      || !priorities.HasAnyPotentialControl(building)
       || bindings.ContainsKey(inspector)) return;
 
     Column? host = TryGetMainBody(inspector);
@@ -93,11 +97,10 @@ public sealed class InspectorGroupAssignmentController {
 
   private PanelWithHeader BuildPanel(IEntityInspector inspector, int entityId) {
     PanelWithHeader panel = new PanelWithHeader().Title(new LocStrFormatted("Priority group"));
-    panel.Collapsed(collapsedEntityIds.Contains(entityId));
+    panel.Collapsed(!groups.IsInspectorExpanded);
     panel.Header.OnClick((Action)(() => {
       panel.Collapsed(!panel.IsCollapsed);
-      if (panel.IsCollapsed) collapsedEntityIds.Add(entityId);
-      else collapsedEntityIds.Remove(entityId);
+      groups.SetInspectorExpanded(!panel.IsCollapsed);
     }));
 
     Row row = new Row(2.pt()).AlignItemsCenter();
@@ -175,7 +178,7 @@ public sealed class InspectorGroupAssignmentController {
   private static Column? TryGetMainBody(IEntityInspector inspector) {
     for (Type? type = inspector.GetType(); type != null; type = type.BaseType) {
       if (!type.IsGenericType || type.GetGenericTypeDefinition().FullName != "Mafi.Unity.Ui.Library.Inspectors.BaseInspector`1") continue;
-      return type.GetField("MainBody", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)?.GetValue(inspector) as Column;
+      return type.GetField("MainBody", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)?.GetValue(inspector) as Column;
     }
     return null;
   }

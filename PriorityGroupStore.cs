@@ -15,6 +15,9 @@ public sealed class PriorityGroupState {
 
   [DataMember(Name = "groups")]
   public List<PriorityGroup> Groups = new List<PriorityGroup>();
+
+  [DataMember(Name = "inspectorExpanded")]
+  public bool InspectorExpanded;
 }
 
 [DataContract]
@@ -52,6 +55,14 @@ public sealed class PriorityGroupStore {
   }
 
   public IReadOnlyList<PriorityGroup> Groups => state.Groups;
+
+  public bool IsInspectorExpanded => state.InspectorExpanded;
+
+  public void SetInspectorExpanded(bool expanded) {
+    if (state.InspectorExpanded == expanded) return;
+    state.InspectorExpanded = expanded;
+    Save();
+  }
 
   public PriorityGroup Create(string name) {
     PriorityGroup group = new PriorityGroup { Name = NormalizeName(name) };
@@ -154,4 +165,5 @@ public sealed class PriorityGroupStore {
       return Encoding.UTF8.GetString(stream.ToArray());
     }
   }
+
 }
