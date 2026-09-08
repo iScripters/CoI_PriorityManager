@@ -12,6 +12,7 @@ using Mafi.Unity.Ui.Library.Inspectors;
 using Mafi.Unity.UiToolkit;
 using Mafi.Unity.UiToolkit.Component;
 using Mafi.Unity.UiToolkit.Library;
+using UQueryExtensions = UnityEngine.UIElements.UQueryExtensions;
 
 namespace PriorityManager;
 
@@ -157,7 +158,8 @@ public sealed class PriorityManagerWindow : Window {
     Column page = new Column(2.pt()).AlignItemsStretch();
     Panel createPanel = new Panel(noBolts: true).ReducedPadding().AlignSelfStretch();
     Row createRow = new Row(2.pt()).AlignItemsCenter();
-    newGroupName.CharLimit(64).Placeholder(new LocStrFormatted("New group name")).FlexGrow(1f).MinWidth(300.px());
+    newGroupName.CharLimit(64).Placeholder(new LocStrFormatted("New group name")).FlexGrow(1f).MinWidth(300.px())
+      .OnReturn(CreateGroupAndKeepEditing);
     createRow.Add(newGroupName);
     createRow.Add(new ButtonText(Button.Primary, new LocStrFormatted("Create group"), CreateGroup));
     createPanel.Body.Add(createRow);
@@ -358,10 +360,29 @@ public sealed class PriorityManagerWindow : Window {
   }
 
   private void CreateGroup() {
+    CreateGroup(rebuildRows: true);
+  }
+
+  private void CreateGroupAndKeepEditing() {
+    CreateGroup(rebuildRows: false);
+    newGroupName.Schedule.Execute(() => {
+      // Return moves focus to the field's composite root; the inner text element receives characters.
+      UnityEngine.UIElements.TextElement? input = UQueryExtensions.Q<UnityEngine.UIElements.TextElement>(newGroupName.RootElement);
+      if (input != null) input.Focus();
+      else newGroupName.Focus();
+      newGroupName.MoveCaretToEnd();
+    });
+  }
+
+  private void CreateGroup(bool rebuildRows) {
     PriorityGroup group = groups.Create(newGroupName.GetText());
-    newGroupName.Text("");
+    newGroupName.ClearValue();
     SetStatus($"Created group '{group.Name}'.");
-    RebuildGroupRows();
+    if (rebuildRows) RebuildGroupRows();
+    else {
+      if (groups.Groups.Count == 1) RemoveChildren(groupRows);
+      groupRows.Add(BuildGroupCard(group));
+    }
   }
 
   private void RenameGroup(PriorityGroup group, string name) {
