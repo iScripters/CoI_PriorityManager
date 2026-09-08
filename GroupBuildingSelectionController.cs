@@ -65,9 +65,9 @@ public sealed class GroupBuildingSelectionController : BaseEntityCursorInputCont
     activeGroup = group;
     isRemoving = remove;
     InitHighlightColors(
-      remove ? ColorRgba.Red : ColorRgba.CornflowerBlue,
-      ColorRgba.Red,
-      remove ? ColorRgba.Red : ColorRgba.CornflowerBlue);
+      remove ? ColorRgba.Red : ColorRgba.Green,
+      remove ? ColorRgba.Red : ColorRgba.Green,
+      remove ? ColorRgba.Red : ColorRgba.Green);
     Context.InputMgr.ActivateNewController(this);
   }
 

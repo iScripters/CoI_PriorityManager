@@ -43,10 +43,12 @@ public sealed class PriorityManagerWindow : Window {
   private readonly TabContainer tabs;
   private readonly HashSet<string> expandedGroupIds = new HashSet<string>();
   private readonly Dictionary<int, int> prioritySortValues = new Dictionary<int, int>();
+  private readonly Dictionary<int, string> overallDisplayValues = new Dictionary<int, string>();
   private readonly List<ulong> groupHighlightIds = new List<ulong>();
   private List<IStaticEntity>? overallBuildings;
   private int overallPage;
   private int prioritySortCheckFrames;
+  private bool overallSortDescending;
   private bool removeGroupsOnReset = true;
   private bool resetUngroupedOnly;
 
@@ -87,6 +89,7 @@ public sealed class PriorityManagerWindow : Window {
     groups.PruneMissing(id => priorities.TryGetBuilding(id, out _));
     overallBuildings = null;
     prioritySortValues.Clear();
+    overallDisplayValues.Clear();
     expandedGroupIds.Clear();
     RefreshActiveTab();
   }
@@ -95,11 +98,12 @@ public sealed class PriorityManagerWindow : Window {
     groups.PruneMissing(id => priorities.TryGetBuilding(id, out _));
     overallBuildings = null;
     prioritySortValues.Clear();
+    overallDisplayValues.Clear();
     RefreshActiveTab();
   }
 
   public void RefreshPrioritySortIfChanged() {
-    if (tabs.ActiveTabIndex != 0 || overallSort.SelectedValue != OverallSort.Priority || overallBuildings == null) return;
+    if (tabs.ActiveTabIndex != 0 || overallBuildings == null) return;
     if (++prioritySortCheckFrames < 10) return;
     prioritySortCheckFrames = 0;
 
@@ -108,13 +112,16 @@ public sealed class PriorityManagerWindow : Window {
     foreach (IStaticEntity building in overallBuildings) {
       if (building.IsDestroyed || !MatchesFilter(building, filter)) continue;
       visibleCount++;
-      if (!prioritySortValues.TryGetValue(building.Id.Value, out int previous)
-        || previous != GeneralPriorityForSort(building)) {
+      if (!overallDisplayValues.TryGetValue(building.Id.Value, out string? displayed)
+        || displayed != OverallDisplayValue(building)
+        || (overallSort.SelectedValue == OverallSort.Priority
+          && (!prioritySortValues.TryGetValue(building.Id.Value, out int previous)
+            || previous != GeneralPriorityForSort(building)))) {
         RebuildOverallRows();
         return;
       }
     }
-    if (visibleCount != prioritySortValues.Count) RebuildOverallRows();
+    if (visibleCount != overallDisplayValues.Count) RebuildOverallRows();
   }
 
   private void RefreshActiveTab() {
@@ -143,6 +150,10 @@ public sealed class PriorityManagerWindow : Window {
     filterRow.Add(overallFilter);
     filterRow.Add(new Label(new LocStrFormatted("Sort")));
     filterRow.Add(overallSort.NoShrink().MinWidth(150.px()));
+    Toggle descendingToggle = new Toggle(standalone: true).Value(overallSortDescending)
+      .OnValueChanged(ChangeOverallSortDirection);
+    filterRow.Add(descendingToggle.Tooltip(new LocStrFormatted("Reverse the selected sort order."), enabled: true, isError: false, openBelow: false));
+    filterRow.Add(new Label(new LocStrFormatted("Descending")));
     controlsPanel.Body.Add(filterRow);
     Row navigation = new Row(2.pt()).AlignItemsCenter();
     navigation.Add(new ButtonText(Button.General, new LocStrFormatted("Previous"), PreviousOverallPage));
@@ -176,6 +187,7 @@ public sealed class PriorityManagerWindow : Window {
     if (buildings.Count == 0) {
       overallPage = 0;
       prioritySortValues.Clear();
+      overallDisplayValues.Clear();
       overallPageLabel.Value(new LocStrFormatted("0 buildings"));
       overallRows.Add(new Label(new LocStrFormatted("No priority-capable buildings found.")));
       return;
@@ -188,6 +200,7 @@ public sealed class PriorityManagerWindow : Window {
     overallPageLabel.Value(new LocStrFormatted($"{firstIndex + 1}-{lastIndex} of {buildings.Count}"));
     for (int index = firstIndex; index < lastIndex; index++) overallRows.Add(BuildBuildingRow(buildings[index]));
     CapturePrioritySortValues(buildings);
+    CaptureOverallDisplayValues(buildings);
   }
 
   private List<IStaticEntity> FilterAndSortOverallBuildings() {
@@ -211,21 +224,20 @@ public sealed class PriorityManagerWindow : Window {
   }
 
   private int CompareBuildings(IStaticEntity left, IStaticEntity right) {
+    int comparison = 0;
     switch (overallSort.SelectedValue) {
       case OverallSort.Priority:
-        int priorityComparison = GeneralPriorityForSort(left).CompareTo(GeneralPriorityForSort(right));
-        if (priorityComparison != 0) return priorityComparison;
+        comparison = GeneralPriorityForSort(left).CompareTo(GeneralPriorityForSort(right));
         break;
       case OverallSort.Group:
-        int groupComparison = string.Compare(GroupName(left), GroupName(right), StringComparison.CurrentCultureIgnoreCase);
-        if (groupComparison != 0) return groupComparison;
+        comparison = string.Compare(GroupName(left), GroupName(right), StringComparison.CurrentCultureIgnoreCase);
         break;
       case OverallSort.Type:
-        int typeComparison = string.Compare(BuildingType(left), BuildingType(right), StringComparison.CurrentCultureIgnoreCase);
-        if (typeComparison != 0) return typeComparison;
+        comparison = string.Compare(BuildingType(left), BuildingType(right), StringComparison.CurrentCultureIgnoreCase);
         break;
     }
-    return string.Compare(BuildingName(left).Value, BuildingName(right).Value, StringComparison.CurrentCultureIgnoreCase);
+    if (comparison == 0) comparison = string.Compare(BuildingName(left).Value, BuildingName(right).Value, StringComparison.CurrentCultureIgnoreCase);
+    return overallSortDescending ? -comparison : comparison;
   }
 
   private int GeneralPriorityForSort(IStaticEntity building) {
@@ -247,14 +259,31 @@ public sealed class PriorityManagerWindow : Window {
     RebuildOverallRows();
   }
 
+  private void ChangeOverallSortDirection(bool descending) {
+    if (overallSortDescending == descending) return;
+    overallSortDescending = descending;
+    overallPage = 0;
+    RebuildOverallRows();
+  }
+
   private void CapturePrioritySortValues(List<IStaticEntity> buildings) {
     prioritySortValues.Clear();
     if (overallSort.SelectedValue != OverallSort.Priority) return;
     foreach (IStaticEntity building in buildings) prioritySortValues.Add(building.Id.Value, GeneralPriorityForSort(building));
   }
 
+  private void CaptureOverallDisplayValues(List<IStaticEntity> buildings) {
+    overallDisplayValues.Clear();
+    foreach (IStaticEntity building in buildings) overallDisplayValues.Add(building.Id.Value, OverallDisplayValue(building));
+  }
+
+  private string OverallDisplayValue(IStaticEntity building) {
+    return BuildingName(building).Value + "\n" + BuildingType(building) + "\n" + GroupName(building);
+  }
+
   private UiComponent BuildBuildingRow(IStaticEntity building) {
     Panel card = new Panel(noBolts: true).ReducedPadding().BodyGap(2.pt()).MarginBottom(2.pt()).AlignSelfStretch();
+    card.OnMouseEnterLeave(() => HighlightBuilding(building), ClearGroupHighlights);
     Row header = new Row(2.pt()).AlignItemsCenter();
     Icon icon = new Icon(GetIconPath(building)).Size(48.px()).OnClick(() => Focus(building.Id.Value));
     header.Add(icon);
@@ -272,20 +301,24 @@ public sealed class PriorityManagerWindow : Window {
     card.Body.Add(header);
 
     Row controls = new Row(2.pt()).AlignItemsEnd();
-    AddIndividualControl(controls, building, PriorityControl.General, "General");
-    AddIndividualControl(controls, building, PriorityControl.Import, "Import");
-    AddIndividualControl(controls, building, PriorityControl.Export, "Export");
-    AddIndividualControl(controls, building, PriorityControl.Generator, "Generator");
+    AddIndividualControl(controls, building, PriorityControl.General, "General", groupDropdown);
+    AddIndividualControl(controls, building, PriorityControl.Import, "Import", groupDropdown);
+    AddIndividualControl(controls, building, PriorityControl.Export, "Export", groupDropdown);
+    AddIndividualControl(controls, building, PriorityControl.Generator, "Generator", groupDropdown);
     card.Body.Add(controls);
     return card;
   }
 
-  private void AddIndividualControl(Row parent, IStaticEntity building, PriorityControl control, string title) {
+  private void AddIndividualControl(Row parent, IStaticEntity building, PriorityControl control, string title, Dropdown<PriorityGroup> groupDropdown) {
     if (!priorities.Supports(building, control)) return;
     Column item = new Column(1.pt()).AlignItemsCenter();
     item.Add(new Label(new LocStrFormatted(title)));
     PriorityDropdown dropdown = CreatePriorityDropdown(priorities.Get(building, control));
-    dropdown.OnValueChanged((value, index) => ChangeIndividualPriority(building.Id.Value, control, value));
+    dropdown.OnValueChanged((value, index) => {
+      bool removedFromGroup = ChangeIndividualPriority(building.Id.Value, control, value);
+      dropdown.SetValue(value);
+      if (removedFromGroup) groupDropdown.SetValue(null!);
+    });
     item.Add(dropdown);
     parent.Add(item);
   }
@@ -347,6 +380,7 @@ public sealed class PriorityManagerWindow : Window {
 
   private UiComponent BuildGroupMemberRow(PriorityGroup group, IStaticEntity building) {
     PanelRow row = new PanelRow(2.pt(), noBolts: true).AlignSelfStretch();
+    row.OnMouseEnterLeave(() => HighlightBuilding(building), () => HighlightGroupMembers(group));
     row.Body.Add(new Icon(GetIconPath(building)).Size(30.px()).OnClick(() => Focus(building.Id.Value)));
     row.Body.Add(new Label(BuildingName(building)).FlexGrow(1f));
     row.Body.Add(new ButtonText(Button.Danger, new LocStrFormatted("Remove"), () => RemoveFromGroup(group, building.Id.Value)));
@@ -459,20 +493,27 @@ public sealed class PriorityManagerWindow : Window {
     }
   }
 
+  private void HighlightBuilding(IStaticEntity building) {
+    ClearGroupHighlights();
+    if (building is IRenderedEntity rendered) {
+      groupHighlightIds.Add(entitiesRendering.AddHighlight(rendered, ColorRgba.CornflowerBlue));
+    }
+  }
+
   private void ClearGroupHighlights() {
     foreach (ulong highlightId in groupHighlightIds) entitiesRendering.RemoveHighlight(highlightId);
     groupHighlightIds.Clear();
   }
 
-  private void ChangeIndividualPriority(int entityId, PriorityControl control, int priority) {
-    if (!priorities.TryGetBuilding(entityId, out IStaticEntity building)) return;
+  private bool ChangeIndividualPriority(int entityId, PriorityControl control, int priority) {
+    if (!priorities.TryGetBuilding(entityId, out IStaticEntity building)) return false;
     PriorityGroup? group = groups.GetForEntity(entityId);
     if (group != null) {
       groups.Remove(entityId);
       SetStatus($"Changed {BuildingName(building).Value}; it was removed from '{group.Name}'.");
     }
     priorities.Set(building, control, priority);
-    if (group != null) RebuildOverallRows();
+    return group != null;
   }
 
   private void ChangeGroupPriority(PriorityGroup group, PriorityControl control, int priority) {
