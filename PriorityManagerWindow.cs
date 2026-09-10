@@ -86,7 +86,7 @@ public sealed class PriorityManagerWindow : Window {
   }
 
   public void Refresh() {
-    groups.PruneMissing(id => priorities.TryGetBuilding(id, out _));
+    groups.PruneMissing(id => priorities.TryGetBuilding(id, out IStaticEntity building) && priorities.IsGroupEligible(building));
     overallBuildings = null;
     prioritySortValues.Clear();
     overallDisplayValues.Clear();
@@ -95,7 +95,7 @@ public sealed class PriorityManagerWindow : Window {
   }
 
   public void RefreshAfterBuildingSelection() {
-    groups.PruneMissing(id => priorities.TryGetBuilding(id, out _));
+    groups.PruneMissing(id => priorities.TryGetBuilding(id, out IStaticEntity building) && priorities.IsGroupEligible(building));
     overallBuildings = null;
     prioritySortValues.Clear();
     overallDisplayValues.Clear();
@@ -437,6 +437,7 @@ public sealed class PriorityManagerWindow : Window {
   private void ChangeGroup(int entityId, PriorityGroup? selectedGroup) {
     PriorityGroup? currentGroup = groups.GetForEntity(entityId);
     if (!priorities.TryGetBuilding(entityId, out IStaticEntity building)) return;
+    if (!priorities.IsGroupEligible(building)) return;
 
     if (selectedGroup == null) {
       if (currentGroup == null) return;

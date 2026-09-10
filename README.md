@@ -6,10 +6,12 @@ Priority Manager is an unofficial, non-commercial mod for Captain of Industry 0.
 
 ## Features
 
-- **Overall** lists every supported building, including storage and Cargo Depot priority controls. Filter by name, type, or group; sort ascending or descending by name, priority, group, or type; then select a building icon to pan the camera to it.
+- **Overall** lists every building with a managed priority control, including inactive storage and Cargo Depot controls. Filter by name, type, or group; sort ascending or descending by name, priority, group, or type; then select a building icon to pan the camera to it.
 - **Groups** creates named groups with shared general, import, export, and generator priority settings. Settings apply only to members that support the relevant control. Hover a group card to highlight its members on the map; hovering an individual building row highlights only that building.
 - **Add buildings** uses the game-native single-click and area-selection controls to assign group members. **Remove buildings** uses the same controls with red highlights and only selects that group's members. Press Escape to cancel either mode.
+- **Transport paths** such as conveyors, balancers, pipes, and molten channels are excluded from Priority Manager groups.
 - **Building inspectors** include a collapsible **Priority group** section for direct group assignment and priority reset on every building that can support a managed priority. It is collapsed by default and remembers one expansion preference for all inspectors.
+- **Manual priority overrides** from either Priority Manager or a native game inspector remove that building from its group while preserving the manually selected value.
 - **Reset actions** restore native defaults. Removing a building from a group or deleting a group resets its supported priority controls.
 - **Reset all priorities** can preserve groups and/or limit the reset to buildings outside groups.
 
@@ -61,7 +63,7 @@ Create a release archive:
 .\scripts\package.ps1
 ```
 
-The archive is written to `dist\PriorityManager_0.7.1.zip`.
+The archive is written to `dist\PriorityManager_0.8.0.zip`.
 
 ## License And Attribution
 

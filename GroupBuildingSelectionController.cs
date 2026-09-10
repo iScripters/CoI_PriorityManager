@@ -72,7 +72,7 @@ public sealed class GroupBuildingSelectionController : BaseEntityCursorInputCont
   }
 
   protected override bool Matches(IStaticEntity entity, bool isAreaSelection, bool isLeftClick) {
-    if (entity.IsDestroyed || !priorities.HasAnyControl(entity)) return false;
+    if (!priorities.IsGroupEligible(entity)) return false;
     return !isRemoving || activeGroup?.MemberIds.Contains(entity.Id.Value) == true;
   }
 

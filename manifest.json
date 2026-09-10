@@ -1,6 +1,6 @@
 {
   "id": "PriorityManager",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "display_name": "Priority Manager",
   "description_short": "Manage building priorities and shared priority groups.",
   "description_long": "View and change building priorities from one window. Create named groups with separate general, import, export, and generator priority settings.",

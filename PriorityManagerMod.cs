@@ -24,6 +24,7 @@ public sealed class PriorityManagerMod : IMod {
   public void RegisterDependencies(DependencyResolverBuilder depBuilder, ProtosDb protosDb, bool gameWasLoaded) {
     depBuilder.RegisterDependency<PriorityGroupStore>().AsSelf();
     depBuilder.RegisterDependency<BuildingPriorityService>().AsSelf();
+    depBuilder.RegisterDependency<PriorityGroupMembershipMonitor>().AsSelf();
     depBuilder.RegisterDependency<GroupBuildingSelectionController>().AsSelf();
     depBuilder.RegisterDependency<InspectorGroupAssignmentController>().AsSelf();
     depBuilder.RegisterDependency<PriorityManagerWindow>().AsSelf();
@@ -36,6 +37,7 @@ public sealed class PriorityManagerMod : IMod {
     resolver.Resolve<IGameLoopEvents>().RegisterRendererInitState(this, () => {
       resolver.Resolve<PriorityManagerController>();
       resolver.Resolve<InspectorGroupAssignmentController>();
+      resolver.Resolve<PriorityGroupMembershipMonitor>();
     });
   }
 

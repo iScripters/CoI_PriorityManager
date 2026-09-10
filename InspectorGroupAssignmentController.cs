@@ -39,17 +39,30 @@ public sealed class InspectorGroupAssignmentController {
   }
 
   private sealed class InspectorBinding {
-    public InspectorBinding(UiComponent root, Action<Window> onClose) {
+    public InspectorBinding(UiComponent root, Dropdown<PriorityGroup> groupDropdown, Action<Window> onClose) {
       Root = root;
+      GroupDropdown = groupDropdown;
       OnClose = onClose;
     }
 
     public UiComponent Root { get; }
+    public Dropdown<PriorityGroup> GroupDropdown { get; }
     public Action<Window> OnClose { get; }
+  }
+
+  private sealed class GroupPanel {
+    public GroupPanel(PanelWithHeader panel, Dropdown<PriorityGroup> groupDropdown) {
+      Panel = panel;
+      GroupDropdown = groupDropdown;
+    }
+
+    public PanelWithHeader Panel { get; }
+    public Dropdown<PriorityGroup> GroupDropdown { get; }
   }
 
   private readonly PriorityGroupStore groups;
   private readonly BuildingPriorityService priorities;
+  private readonly PriorityGroupMembershipMonitor membershipMonitor;
   private readonly IUnityInputMgr input;
   private readonly UiContext context;
   private readonly Dictionary<IEntityInspector, InspectorBinding> bindings = new Dictionary<IEntityInspector, InspectorBinding>();
@@ -58,14 +71,17 @@ public sealed class InspectorGroupAssignmentController {
   public InspectorGroupAssignmentController(
     PriorityGroupStore groups,
     BuildingPriorityService priorities,
+    PriorityGroupMembershipMonitor membershipMonitor,
     IUnityInputMgr input,
     UiContext context) {
     this.groups = groups;
     this.priorities = priorities;
+    this.membershipMonitor = membershipMonitor;
     this.input = input;
     this.context = context;
     input.ControllerActivated += OnControllerActivated;
     input.ControllerDeactivated += OnControllerDeactivated;
+    membershipMonitor.MembershipRemoved += OnMembershipRemoved;
 
     foreach (IUnityInputController controller in input.ActiveControllers) OnControllerActivated(controller);
   }
@@ -79,7 +95,7 @@ public sealed class InspectorGroupAssignmentController {
   private void TryAttach(IEntityInspector inspector) {
     if (!(inspector.EntityUntyped is IStaticEntity building)
       || building.IsDestroyed
-      || !priorities.HasAnyPotentialControl(building)
+      || !priorities.IsGroupEligible(building)
       || bindings.ContainsKey(inspector)) return;
 
     Column? host = TryGetMainBody(inspector);
@@ -87,15 +103,17 @@ public sealed class InspectorGroupAssignmentController {
     if (host == null) return;
 
     int entityId = building.Id.Value;
-    PanelWithHeader panel = BuildPanel(inspector, entityId);
-    host.Add(panel);
+    GroupPanel groupPanel = BuildPanel(inspector, entityId);
+    // Some inspectors, including Captain's Office, leave MainBody hidden until a panel is added through the base helper.
+    host.Show();
+    host.Add(groupPanel.Panel);
 
     Action<Window> onClose = _ => RemoveBinding(inspector);
     inspector.OnCloseStart += onClose;
-    bindings.Add(inspector, new InspectorBinding(panel, onClose));
+    bindings.Add(inspector, new InspectorBinding(groupPanel.Panel, groupPanel.GroupDropdown, onClose));
   }
 
-  private PanelWithHeader BuildPanel(IEntityInspector inspector, int entityId) {
+  private GroupPanel BuildPanel(IEntityInspector inspector, int entityId) {
     PanelWithHeader panel = new PanelWithHeader().Title(new LocStrFormatted("Priority group"));
     panel.Collapsed(!groups.IsInspectorExpanded);
     panel.Header.OnClick((Action)(() => {
@@ -122,7 +140,7 @@ public sealed class InspectorGroupAssignmentController {
     resetRow.Add(new Label(new LocStrFormatted("Restore game defaults")).FlexGrow(1f));
     resetRow.Add(new ButtonText(Button.Danger, new LocStrFormatted("Reset priorities"), () => ResetBuilding(inspector, entityId, dropdown)));
     panel.Body.Add(resetRow);
-    return panel;
+    return new GroupPanel(panel, dropdown);
   }
 
   private void ChangeGroup(IEntityInspector inspector, int entityId, PriorityGroup? group) {
@@ -166,6 +184,14 @@ public sealed class InspectorGroupAssignmentController {
 
   private void OnControllerDeactivated(IUnityInputController controller) {
     if (controller is IEntityInspector inspector) RemoveBinding(inspector);
+  }
+
+  private void OnMembershipRemoved(int entityId) {
+    foreach (KeyValuePair<IEntityInspector, InspectorBinding> pair in bindings) {
+      if (pair.Key.EntityUntyped is IStaticEntity building && building.Id.Value == entityId) {
+        pair.Value.GroupDropdown.SetValue(null!);
+      }
+    }
   }
 
   private void RemoveBinding(IEntityInspector inspector) {

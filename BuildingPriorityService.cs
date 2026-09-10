@@ -7,6 +7,7 @@ using Mafi.Core.Entities.Commands;
 using Mafi.Core.Entities.Priorities;
 using Mafi.Core.Entities.Static;
 using Mafi.Core.Factory.ElectricPower;
+using Mafi.Core.Factory.Transports;
 using Mafi.Core.Input;
 
 namespace PriorityManager;
@@ -33,7 +34,7 @@ public sealed class BuildingPriorityService {
 
   public IEnumerable<IStaticEntity> GetPriorityBuildings() {
     foreach (IEntity entity in entities.Entities) {
-      if (entity is IStaticEntity building && !building.IsDestroyed && HasAnyControl(building)) {
+      if (entity is IStaticEntity building && IsGroupEligible(building)) {
         yield return building;
       }
     }
@@ -51,9 +52,15 @@ public sealed class BuildingPriorityService {
   }
 
   public bool HasAnyPotentialControl(IStaticEntity building) {
-    return building is IEntityWithGeneralPriority
+    return Supports(building, PriorityControl.General)
       || building is IEntityWithCustomPriority
       || building is IElectricityGeneratingEntity;
+  }
+
+  public bool IsGroupEligible(IStaticEntity building) {
+    return !building.IsDestroyed
+      && !(building is Transport)
+      && HasAnyPotentialControl(building);
   }
 
   public bool Supports(IStaticEntity building, PriorityControl control) {
