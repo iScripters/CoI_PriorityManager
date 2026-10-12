@@ -1,6 +1,6 @@
 # Priority Manager
 
-> **Maintainer note:** This entire project was vibe-coded with AI assistance. The UI/UX can be improved, but the maintainer will not be pursuing that work. Pull requests are welcome.
+> **Maintainer note:** This entire project was vibe-coded with AI assistance. The UI/UX can be improved, but I am not the best at that. Feature requests, issues and pull requests are welcome!
 
 Priority Manager is an unofficial, non-commercial mod for Captain of Industry 0.8.7. It provides one place to inspect, change, reset, and organize building priorities.
 
