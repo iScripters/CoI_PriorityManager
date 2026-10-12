@@ -26,7 +26,7 @@ public sealed class PriorityGroup {
   public string Id = Guid.NewGuid().ToString("N");
 
   [DataMember(Name = "name")]
-  public string Name = "New group";
+  public string Name = "";
 
   [DataMember(Name = "generalPriority")]
   public int GeneralPriority = 9;
@@ -47,10 +47,12 @@ public sealed class PriorityGroup {
 public sealed class PriorityGroupStore {
   private const string GroupsStateKey = "groups_state";
   private readonly ModJsonConfig jsonConfig;
+  private readonly PriorityManagerLocalization loc;
   private PriorityGroupState state;
 
-  public PriorityGroupStore(PriorityManagerMod mod) {
+  public PriorityGroupStore(PriorityManagerMod mod, PriorityManagerLocalization loc) {
     jsonConfig = mod.JsonConfig;
+    this.loc = loc;
     state = Deserialize(jsonConfig.GetString(GroupsStateKey, ""));
   }
 
@@ -134,12 +136,12 @@ public sealed class PriorityGroupStore {
     }
   }
 
-  private static string NormalizeName(string name) {
+  private string NormalizeName(string name) {
     string trimmed = (name ?? "").Trim();
-    return string.IsNullOrEmpty(trimmed) ? "Unnamed group" : trimmed.Substring(0, Math.Min(trimmed.Length, 64));
+    return string.IsNullOrEmpty(trimmed) ? loc.Value(PriorityManagerText.UnnamedGroup) : trimmed.Substring(0, Math.Min(trimmed.Length, 64));
   }
 
-  private static PriorityGroupState Deserialize(string serialized) {
+  private PriorityGroupState Deserialize(string serialized) {
     if (string.IsNullOrWhiteSpace(serialized)) return new PriorityGroupState();
     try {
       using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(serialized))) {
@@ -148,7 +150,7 @@ public sealed class PriorityGroupStore {
         loaded.Groups ??= new List<PriorityGroup>();
         foreach (PriorityGroup group in loaded.Groups) {
           group.Id ??= Guid.NewGuid().ToString("N");
-          group.Name ??= "Unnamed group";
+          if (string.IsNullOrWhiteSpace(group.Name)) group.Name = loc.Value(PriorityManagerText.UnnamedGroup);
           group.MemberIds ??= new List<int>();
         }
         return loaded;

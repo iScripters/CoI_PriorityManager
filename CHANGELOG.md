@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0 - 2026-10-12
+
+### Added
+
+- Added complete in-game localization for all 21 languages supported by Captain of Industry.
+- Priority Manager now follows the game's selected language for its toolbar entry, manager window, building-inspector panel, tooltips, status messages, sorting labels, and default unnamed group names.
+
+### Improved
+
+- Building filtering and sorting now use the selected game language's culture rules.
+- Added catalog validation to ensure every language includes every UI key and preserves formatting placeholders.
+
 ## 0.8.0 - 2026-09-10
 
 Priority Manager is getting a major quality-of-life pass focused on faster group management, clearer feedback, and better integration with Captain of Industry's native UI. ⚙️

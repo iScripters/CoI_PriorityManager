@@ -18,21 +18,21 @@ public sealed class InspectorGroupAssignmentController {
   private sealed class CreateGroupPopup : Window {
     private readonly TitleWithRename nameEditor;
 
-    public CreateGroupPopup(Action<string> onCreate)
-      : base(new LocStrFormatted("Create priority group")) {
+    public CreateGroupPopup(Action<string> onCreate, PriorityManagerLocalization loc)
+      : base(loc.Text(PriorityManagerText.CreatePriorityGroup)) {
       WindowSize(new Px(420), new Px(180));
       MakeMovableAndEnablePositionSaving();
 
-      Body.Add(new Label(new LocStrFormatted("Group name")));
-      nameEditor = new TitleWithRename(new LocStrFormatted("New group"));
+      Body.Add(new Label(loc.Text(PriorityManagerText.GroupName)));
+      nameEditor = new TitleWithRename(loc.Text(PriorityManagerText.NewGroup));
       nameEditor.EnableRename(name => {
         onCreate(name);
         Close();
       });
       Body.Add(nameEditor);
-      Body.Add(new Label(new LocStrFormatted("Confirm the name with the checkmark.")));
+      Body.Add(new Label(loc.Text(PriorityManagerText.ConfirmGroupName)));
       Row buttons = new Row(2.pt()).AlignItemsCenter();
-      buttons.Add(new ButtonText(Button.General, new LocStrFormatted("Cancel"), Close));
+      buttons.Add(new ButtonText(Button.General, loc.Text(PriorityManagerText.Cancel), Close));
       Body.Add(buttons);
       nameEditor.StartRename();
     }
@@ -65,6 +65,7 @@ public sealed class InspectorGroupAssignmentController {
   private readonly PriorityGroupMembershipMonitor membershipMonitor;
   private readonly IUnityInputMgr input;
   private readonly UiContext context;
+  private readonly PriorityManagerLocalization loc;
   private readonly Dictionary<IEntityInspector, InspectorBinding> bindings = new Dictionary<IEntityInspector, InspectorBinding>();
   private CreateGroupPopup? createGroupPopup;
 
@@ -73,12 +74,14 @@ public sealed class InspectorGroupAssignmentController {
     BuildingPriorityService priorities,
     PriorityGroupMembershipMonitor membershipMonitor,
     IUnityInputMgr input,
-    UiContext context) {
+    UiContext context,
+    PriorityManagerLocalization loc) {
     this.groups = groups;
     this.priorities = priorities;
     this.membershipMonitor = membershipMonitor;
     this.input = input;
     this.context = context;
+    this.loc = loc;
     input.ControllerActivated += OnControllerActivated;
     input.ControllerDeactivated += OnControllerDeactivated;
     membershipMonitor.MembershipRemoved += OnMembershipRemoved;
@@ -114,7 +117,7 @@ public sealed class InspectorGroupAssignmentController {
   }
 
   private GroupPanel BuildPanel(IEntityInspector inspector, int entityId) {
-    PanelWithHeader panel = new PanelWithHeader().Title(new LocStrFormatted("Priority group"));
+    PanelWithHeader panel = new PanelWithHeader().Title(loc.Text(PriorityManagerText.PriorityGroup));
     panel.Collapsed(!groups.IsInspectorExpanded);
     panel.Header.OnClick((Action)(() => {
       panel.Collapsed(!panel.IsCollapsed);
@@ -124,8 +127,8 @@ public sealed class InspectorGroupAssignmentController {
     Row row = new Row(2.pt()).AlignItemsCenter();
 
     Dropdown<PriorityGroup> dropdown = new Dropdown<PriorityGroup>(
-      (group, index, inDropdown) => new Label(new LocStrFormatted(group?.Name ?? "No group")));
-    dropdown.IncludeClearOption(new LocStrFormatted("No group"), null!);
+      (group, index, inDropdown) => new Label(new LocStrFormatted(group?.Name ?? loc.Value(PriorityManagerText.NoGroup))));
+    dropdown.IncludeClearOption(loc.Text(PriorityManagerText.NoGroup), null!);
     dropdown.SetOptions(groups.Groups);
     dropdown.SetValue(groups.GetForEntity(entityId)!);
     dropdown.OnValueChanged((group, index) => ChangeGroup(inspector, entityId, group));
@@ -133,12 +136,12 @@ public sealed class InspectorGroupAssignmentController {
     row.Add(new ButtonText(Button.IconOnly, new LocStrFormatted("+"), () => ShowCreateGroupPopup(inspector, entityId, dropdown))
       .NoShrink()
       .Size(28.px())
-      .Tooltip(new LocStrFormatted("Create group"), enabled: true, isError: false, openBelow: false));
+      .Tooltip(loc.Text(PriorityManagerText.CreateGroup), enabled: true, isError: false, openBelow: false));
     panel.Body.Add(row);
 
     Row resetRow = new Row(2.pt()).AlignItemsCenter();
-    resetRow.Add(new Label(new LocStrFormatted("Restore game defaults")).FlexGrow(1f));
-    resetRow.Add(new ButtonText(Button.Danger, new LocStrFormatted("Reset priorities"), () => ResetBuilding(inspector, entityId, dropdown)));
+    resetRow.Add(new Label(loc.Text(PriorityManagerText.RestoreGameDefaults)).FlexGrow(1f));
+    resetRow.Add(new ButtonText(Button.Danger, loc.Text(PriorityManagerText.ResetPriorities), () => ResetBuilding(inspector, entityId, dropdown)));
     panel.Body.Add(resetRow);
     return new GroupPanel(panel, dropdown);
   }
@@ -170,7 +173,7 @@ public sealed class InspectorGroupAssignmentController {
 
   private void ShowCreateGroupPopup(IEntityInspector inspector, int entityId, Dropdown<PriorityGroup> dropdown) {
     if (createGroupPopup != null) return;
-    createGroupPopup = new CreateGroupPopup(name => CreateAndAssignGroup(inspector, entityId, dropdown, name));
+    createGroupPopup = new CreateGroupPopup(name => CreateAndAssignGroup(inspector, entityId, dropdown, name), loc);
     createGroupPopup.OnCloseStart += _ => createGroupPopup = null;
     createGroupPopup.Open(context.UiRoot);
   }

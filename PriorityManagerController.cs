@@ -20,11 +20,12 @@ public sealed class PriorityManagerController : IToolbarItemController {
     PriorityManagerWindow window,
     GroupBuildingSelectionController buildingSelection,
     ToolbarHud toolbar,
-    UiContext context) {
+    UiContext context,
+    PriorityManagerLocalization loc) {
     this.window = window;
     this.context = context;
     toolbar.AddMainMenuButton(
-      new Mafi.Localization.LocStrFormatted("Priority Manager"),
+      loc.Text(PriorityManagerText.WindowTitle),
       this,
       "Assets/Unity/UserInterface/General/Priority.svg",
       1500f,

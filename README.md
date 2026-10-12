@@ -14,6 +14,7 @@ Priority Manager is an unofficial, non-commercial mod for Captain of Industry 0.
 - **Manual priority overrides** from either Priority Manager or a native game inspector remove that building from its group while preserving the manually selected value.
 - **Reset actions** restore native defaults. Removing a building from a group or deleting a group resets its supported priority controls.
 - **Reset all priorities** can preserve groups and/or limit the reset to buildings outside groups.
+- **Localization** follows the game's selected language. Priority Manager supports English, Catalan, Czech, German, Spanish, Estonian, French, Hungarian, Italian, Japanese, Korean, Norwegian Bokmal, Dutch, Polish, Brazilian Portuguese, Russian, Swedish, Turkish, Ukrainian, Simplified Chinese, and Traditional Chinese.
 
 Priority values run from 1 (highest) to 15 (lowest). Generator group priority is available only when the generator exposes a native default value, so it can be restored safely.
 
@@ -63,7 +64,7 @@ Create a release archive:
 .\scripts\package.ps1
 ```
 
-The archive is written to `dist\PriorityManager_0.8.0.zip`.
+The archive is written to `dist\PriorityManager_0.9.0.zip`.
 
 ## License And Attribution
 
