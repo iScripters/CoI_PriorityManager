@@ -19,6 +19,7 @@ New-Item -ItemType Directory -Path $modRoot -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'manifest.json') -Destination $modRoot
 Copy-Item -LiteralPath (Join-Path $projectRoot 'config.json') -Destination $modRoot
 Copy-Item -LiteralPath (Join-Path $projectRoot 'README.md') -Destination $modRoot
+Copy-Item -LiteralPath (Join-Path $projectRoot 'Translations') -Destination $modRoot -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot 'bin\Release\net48\PriorityManager.dll') -Destination $modRoot
 
 $manifest = Get-Content -LiteralPath (Join-Path $projectRoot 'manifest.json') -Raw | ConvertFrom-Json

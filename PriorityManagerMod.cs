@@ -22,14 +22,10 @@ public sealed class PriorityManagerMod : IMod {
   public void RegisterPrototypes(ProtoRegistrator registrator) { }
 
   public void RegisterDependencies(DependencyResolverBuilder depBuilder, ProtosDb protosDb, bool gameWasLoaded) {
-    depBuilder.RegisterDependency<PriorityManagerLocalization>().AsSelf();
     depBuilder.RegisterDependency<PriorityGroupStore>().AsSelf();
     depBuilder.RegisterDependency<BuildingPriorityService>().AsSelf();
     depBuilder.RegisterDependency<PriorityGroupMembershipMonitor>().AsSelf();
     depBuilder.RegisterDependency<GroupBuildingSelectionController>().AsSelf();
-    depBuilder.RegisterDependency<InspectorGroupAssignmentController>().AsSelf();
-    depBuilder.RegisterDependency<PriorityManagerWindow>().AsSelf();
-    depBuilder.RegisterDependency<PriorityManagerController>().AsSelf();
   }
 
   public void EarlyInit(DependencyResolver resolver) { }

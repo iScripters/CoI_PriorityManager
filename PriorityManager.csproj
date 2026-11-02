@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\PriorityManagerTranslations.json" />
+    <TranslationFiles Include="Translations\**\*.json" />
   </ItemGroup>
 
   <Target Name="DeployMod" AfterTargets="Build" Condition="'$(DeployToModsFolder)' == 'true'">
@@ -36,6 +36,8 @@
     </PropertyGroup>
     <MakeDir Directories="$(ModsFolder)" />
     <Copy SourceFiles="manifest.json;config.json;README.md" DestinationFolder="$(ModsFolder)" />
+    <MakeDir Directories="$(ModsFolder)\Translations" />
+    <Copy SourceFiles="@(TranslationFiles)" DestinationFolder="$(ModsFolder)\Translations" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsFolder)" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModsFolder)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
   </Target>

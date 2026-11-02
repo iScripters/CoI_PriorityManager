@@ -10,6 +10,7 @@ using Mafi.Core.Factory.Transports;
 using Mafi.Core.Prototypes;
 using Mafi.Core.Terrain;
 using Mafi.Unity.Entities;
+using Mafi.Unity.Audio;
 using Mafi.Unity.InputControl;
 using Mafi.Unity.InputControl.AreaTool;
 using Mafi.Unity.InputControl.Factory;
@@ -51,7 +52,7 @@ public sealed class GroupBuildingSelectionController : BaseEntityCursorInputCont
       Option<NewInstanceOf<TransportTrajectoryHighlighter>>.None,
       null,
       null,
-      "Assets/Unity/UserInterface/Audio/ButtonClick.prefab",
+      UiSound.ButtonClick,
       Option<FilterToolbox>.None) {
     this.groups = groups;
     this.priorities = priorities;

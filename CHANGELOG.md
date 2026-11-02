@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.1 - 2026-10-31
+
+### Changed
+
+- Reviewed source compatibility with Captain of Industry 0.8.8 (update 4.3); none of the removed APIs are used by the mod.
+- Moved all localization catalogs from the embedded DLL resource to Captain of Industry's native `Translations/` format. The build, deploy, and release package include those files beside the DLL.
+- Registered all UI strings with the native localization API, including validated format argument counts and game-managed language switching.
+- Removed duplicate dependency registrations that the 0.8.8 global-dependency loader now performs automatically.
+
 ## 0.9.0 - 2026-10-12
 
 ### Added

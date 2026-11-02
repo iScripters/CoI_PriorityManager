@@ -29,7 +29,7 @@ public sealed class PriorityManagerController : IToolbarItemController {
       this,
       "Assets/Unity/UserInterface/General/Priority.svg",
       1500f,
-      null);
+      Option<KbHandle>.None);
     window.OnCloseStart += OnWindowClose;
     buildingSelection.BuildingsAdded += OnBuildingsAdded;
     buildingSelection.BuildingsRemoved += OnBuildingsAdded;
